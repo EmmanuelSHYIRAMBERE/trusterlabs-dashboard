@@ -1,25 +1,32 @@
-'use client';
+"use client";
 
-import { Bell, User, LogOut, Sun, Moon, Monitor } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { useTheme } from 'next-themes';
+import { Bell, User, LogOut, Sun, Moon, Monitor } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState } from "react";
+import { useTheme } from "next-themes";
 
 export function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  const themeOptions: { value: string; icon: React.ReactNode; label: string }[] = [
-    { value: 'light', icon: <Sun size={16} />, label: 'Light' },
-    { value: 'dark', icon: <Moon size={16} />, label: 'Dark' },
-    { value: 'system', icon: <Monitor size={16} />, label: 'Auto' },
+  const themeOptions: {
+    value: string;
+    icon: React.ReactNode;
+    label: string;
+  }[] = [
+    { value: "light", icon: <Sun size={16} />, label: "Light" },
+    { value: "dark", icon: <Moon size={16} />, label: "Dark" },
+    { value: "system", icon: <Monitor size={16} />, label: "Auto" },
   ];
 
-  const currentThemeIcon = theme === 'light'
-    ? <Sun size={18} />
-    : theme === 'system'
-    ? <Monitor size={18} />
-    : <Moon size={18} />;
+  const currentThemeIcon =
+    theme === "light" ? (
+      <Sun size={18} />
+    ) : theme === "system" ? (
+      <Monitor size={18} />
+    ) : (
+      <Moon size={18} />
+    );
 
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
@@ -28,7 +35,9 @@ export function Header() {
       <div className="flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Left section - Title */}
         <div className="flex-1">
-          <h2 className="text-xl font-semibold text-foreground">Security Operations Center</h2>
+          <h2 className="text-xl font-semibold text-foreground">
+            Fortify . Empower . Defend
+          </h2>
         </div>
 
         {/* Right section - Actions */}
@@ -54,11 +63,14 @@ export function Header() {
                 {themeOptions.map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => { setTheme(opt.value); setIsThemeMenuOpen(false); }}
+                    onClick={() => {
+                      setTheme(opt.value);
+                      setIsThemeMenuOpen(false);
+                    }}
                     className={`w-full px-4 py-2 text-sm flex items-center gap-2 transition-colors ${
                       theme === opt.value
-                        ? 'bg-primary/20 text-primary'
-                        : 'text-foreground hover:bg-primary/10'
+                        ? "bg-primary/20 text-primary"
+                        : "text-foreground hover:bg-primary/10"
                     }`}
                   >
                     {opt.icon}
@@ -90,7 +102,9 @@ export function Header() {
               <div className="w-8 h-8 bg-gradient-to-br from-teal-primary to-purple-secondary rounded-full flex items-center justify-center">
                 <User size={16} className="text-white" />
               </div>
-              <span className="text-sm font-medium hidden sm:inline">Admin</span>
+              <span className="text-sm font-medium hidden sm:inline">
+                Admin
+              </span>
             </motion.button>
 
             {/* Dropdown Menu */}
@@ -102,8 +116,12 @@ export function Header() {
                 className="absolute right-0 mt-2 w-48 bg-card rounded-lg border border-border shadow-lg overflow-hidden"
               >
                 <div className="p-3 border-b border-border">
-                  <p className="text-sm font-medium text-foreground">Admin User</p>
-                  <p className="text-xs text-muted-foreground">admin@trusterlabs.com</p>
+                  <p className="text-sm font-medium text-foreground">
+                    Admin User
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    admin@trusterlabs.com
+                  </p>
                 </div>
                 <button className="w-full px-4 py-2 text-sm text-foreground hover:bg-primary/10 flex items-center gap-2 transition-colors">
                   <User size={16} />
