@@ -1,15 +1,31 @@
 'use client';
 
-import { Bell, User, LogOut } from 'lucide-react';
+import { Bell, User, LogOut, Sun, Moon, Monitor } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 
 export function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  const themeOptions: { value: string; icon: React.ReactNode; label: string }[] = [
+    { value: 'light', icon: <Sun size={16} />, label: 'Light' },
+    { value: 'dark', icon: <Moon size={16} />, label: 'Dark' },
+    { value: 'system', icon: <Monitor size={16} />, label: 'Auto' },
+  ];
+
+  const currentThemeIcon = theme === 'light'
+    ? <Sun size={18} />
+    : theme === 'system'
+    ? <Monitor size={18} />
+    : <Moon size={18} />;
+
+  const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 w-full bg-card/80 backdrop-blur-lg border-b border-border">
-      <div className="flex items-center justify-between h-16 px-4 lg:px-8 ml-0 lg:ml-72">
+      <div className="flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Left section - Title */}
         <div className="flex-1">
           <h2 className="text-xl font-semibold text-foreground">Security Operations Center</h2>
@@ -17,6 +33,42 @@ export function Header() {
 
         {/* Right section - Actions */}
         <div className="flex items-center gap-4">
+          {/* Theme Toggle */}
+          <div className="relative">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)}
+              className="relative p-2 text-foreground hover:bg-primary/10 rounded-lg transition-colors"
+              title="Toggle theme"
+            >
+              {currentThemeIcon}
+            </motion.button>
+            {isThemeMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-36 bg-card rounded-lg border border-border shadow-lg overflow-hidden z-50"
+              >
+                {themeOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setTheme(opt.value); setIsThemeMenuOpen(false); }}
+                    className={`w-full px-4 py-2 text-sm flex items-center gap-2 transition-colors ${
+                      theme === opt.value
+                        ? 'bg-primary/20 text-primary'
+                        : 'text-foreground hover:bg-primary/10'
+                    }`}
+                  >
+                    {opt.icon}
+                    {opt.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </div>
+
           {/* Notification Bell */}
           <motion.button
             whileHover={{ scale: 1.05 }}

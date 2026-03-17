@@ -6,6 +6,7 @@ import { Card } from '@/components/shared/Card';
 import { Toast } from '@/components/shared/Toast';
 import { FormModal, FormInput } from '@/components/forms';
 import { useModal } from '@/hooks/useModal';
+import { useTheme } from 'next-themes';
 import { userSettings as initialSettings } from '@/lib/mockData';
 import { motion } from 'framer-motion';
 import { User, Bell, Shield, Palette, Lock, Key, Edit2, Save } from 'lucide-react';
@@ -39,6 +40,7 @@ export default function SettingsPage() {
     visible: false,
   });
   const { openModal, closeModal, isOpen } = useModal();
+  const { theme, setTheme } = useTheme();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -115,6 +117,7 @@ export default function SettingsPage() {
   };
 
   const handlePreferencesChange = (key: keyof typeof settings.preferences, value: string) => {
+    if (key === 'theme') setTheme(value === 'auto' ? 'system' : value);
     const updated = {
       ...settings,
       preferences: {
@@ -469,7 +472,7 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground">Currently selected theme</p>
                       </div>
                       <select
-                        value={settings.preferences.theme}
+                        value={theme === 'system' ? 'auto' : (theme ?? 'dark')}
                         onChange={(e) => handlePreferencesChange('theme', e.target.value)}
                         className="px-3 py-2 rounded-lg bg-card border border-border text-foreground focus:outline-none focus:border-primary/50"
                       >

@@ -42,13 +42,11 @@ export function Sidebar() {
       </button>
 
       {/* Sidebar */}
-      <motion.aside
-        initial={{ x: -280 }}
-        animate={{ x: isOpen ? 0 : -280 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+      <aside
         className={cn(
-          'fixed left-0 top-0 h-screen w-72 bg-sidebar border-r border-sidebar-border overflow-y-auto',
-          'lg:static lg:translate-x-0 z-40 pt-20 lg:pt-0'
+          'fixed left-0 top-0 h-screen w-72 bg-sidebar border-r border-sidebar-border overflow-y-auto z-40 transition-transform duration-300',
+          'pt-20 lg:pt-0',
+          !isOpen && '-translate-x-full lg:translate-x-0'
         )}
       >
         {/* Logo */}
@@ -92,7 +90,7 @@ export function Sidebar() {
             © 2025 TrusterLabs. All rights reserved.
           </p>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Mobile Overlay */}
       {isOpen && (
