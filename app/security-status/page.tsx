@@ -6,19 +6,21 @@ import { Card } from '@/components/shared/Card';
 import { DataTable } from '@/components/shared/DataTable';
 import { Badge } from '@/components/shared/Badge';
 import { StatCard } from '@/components/shared/StatCard';
-import { incidentData as initialIncidents, threatMetrics } from '@/lib/mockData';
-import { FormModal, FormInput, FormSelect, FormTextarea, ConfirmDialog } from '@/components/forms';
+import { threatMetrics } from '@/lib/mockData';
+import { FormModal, FormInput, FormSelect, ConfirmDialog } from '@/components/forms';
 import { useModal } from '@/hooks/useModal';
+import { useCRUD } from '@/hooks/useCRUD';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Shield, Zap, Lock, Plus, Edit2, Trash2, Check } from 'lucide-react';
 
 interface Incident {
-  id: number;
+  id: string;
   type: string;
   severity: 'Critical' | 'High' | 'Medium' | 'Low';
   timestamp: string;
   status: 'Resolved' | 'Under Review' | 'Investigating' | 'Monitoring';
   platform: string;
+  notes?: string;
 }
 
 const attackVectorData = [
@@ -38,42 +40,28 @@ const systemHealthData = [
 ];
 
 export default function SecurityStatusPage() {
-  const [incidents, setIncidents] = useState<Incident[]>(initialIncidents as Incident[]);
+  const { items: incidents, loading, error, apiCreate, apiUpdate, apiDelete } = useCRUD<Incident>('/api/incidents');
   const [formData, setFormData] = useState<Partial<Incident>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { openModal, closeModal, isOpen } = useModal();
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
+  const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
     if (!formData.type?.trim()) newErrors.type = 'Incident type is required';
     if (!formData.platform?.trim()) newErrors.platform = 'Platform is required';
-    if (!formData.timestamp?.trim()) newErrors.timestamp = 'Timestamp is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleOpenCreate = () => {
-    setFormData({
-      type: '',
-      severity: 'Medium',
-      timestamp: new Date().toLocaleTimeString(),
-      status: 'Under Review',
-      platform: '',
-    });
+    setFormData({ type: '', severity: 'Medium', status: 'Under Review', platform: '' });
     setErrors({});
     openModal('create-incident');
   };
@@ -84,102 +72,62 @@ export default function SecurityStatusPage() {
     openModal('edit-incident');
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!validateForm()) return;
-    const newIncident: Incident = {
-      id: Math.max(...incidents.map(i => i.id), 0) + 1,
+    await apiCreate({
       type: formData.type!,
       severity: formData.severity as Incident['severity'],
-      timestamp: formData.timestamp!,
+      timestamp: new Date().toISOString(),
       status: formData.status as Incident['status'],
       platform: formData.platform!,
-    };
-    setIncidents([...incidents, newIncident]);
+      notes: formData.notes,
+    });
     closeModal('create-incident');
   };
 
-  const handleUpdate = () => {
-    if (!validateForm()) return;
-    setIncidents(
-      incidents.map((i) =>
-        i.id === formData.id
-          ? { ...i, ...formData }
-          : i
-      )
-    );
+  const handleUpdate = async () => {
+    if (!validateForm() || !formData.id) return;
+    await apiUpdate(formData.id, formData);
     closeModal('edit-incident');
   };
 
-  const handleResolve = (id: number) => {
-    setIncidents(
-      incidents.map((i) =>
-        i.id === id
-          ? { ...i, status: 'Resolved' }
-          : i
-      )
-    );
+  const handleResolve = async (id: string) => {
+    await apiUpdate(id, { status: 'Resolved' });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteId) {
-      setIncidents(incidents.filter((i) => i.id !== deleteId));
+      await apiDelete(deleteId);
       setDeleteId(null);
     }
   };
 
   return (
     <DashboardLayout>
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-8"
-      >
+      <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
+        {error && (
+          <div className="p-4 rounded-lg bg-red-critical/10 border border-red-critical/30 text-red-critical text-sm">
+            {error}
+          </div>
+        )}
+
         {/* Quick Stats */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard
-            label="Critical Threats"
-            value={threatMetrics.critical}
-            change="+5 today"
-            isPositive={false}
-            variant="critical"
-            icon={<AlertTriangle size={32} />}
-          />
-          <StatCard
-            label="High Priority"
-            value={threatMetrics.high}
-            change="-3 today"
-            isPositive={true}
-            variant="warning"
-            icon={<Zap size={32} />}
-          />
-          <StatCard
-            label="Active Incidents"
-            value="23"
-            change="-8%"
-            isPositive={true}
-            icon={<Shield size={32} />}
-          />
-          <StatCard
-            label="Security Events"
-            value={threatMetrics.totalThreats}
-            change="+12%"
-            isPositive={false}
-            icon={<Lock size={32} />}
-          />
+          <StatCard label="Critical Threats" value={threatMetrics.critical} change="+5 today" isPositive={false} variant="critical" icon={<AlertTriangle size={32} />} />
+          <StatCard label="High Priority" value={threatMetrics.high} change="-3 today" isPositive={true} variant="warning" icon={<Zap size={32} />} />
+          <StatCard label="Active Incidents" value={incidents.filter(i => i.status !== 'Resolved').length} change="-8%" isPositive={true} icon={<Shield size={32} />} />
+          <StatCard label="Security Events" value={threatMetrics.totalThreats} change="+12%" isPositive={false} icon={<Lock size={32} />} />
         </motion.div>
 
         {/* Incidents Header */}
         <motion.div variants={itemVariants} className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-foreground">Security Incidents</h2>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
             onClick={handleOpenCreate}
             className="flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
           >
-            <Plus size={18} />
-            Log Incident
+            <Plus size={18} /> Log Incident
           </motion.button>
         </motion.div>
 
@@ -187,89 +135,58 @@ export default function SecurityStatusPage() {
           {/* Incidents Table */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
             <Card title="Recent Security Incidents" subtitle="All detected threats and incidents">
-              <DataTable
-                columns={[
-                  { key: 'type', label: 'Incident Type', width: '25%' },
-                  {
-                    key: 'severity',
-                    label: 'Severity',
-                    render: (value: string) => (
-                      <Badge
-                        variant={
-                          value === 'Critical'
-                            ? 'critical'
-                            : value === 'High'
-                            ? 'warning'
-                            : 'success'
-                        }
-                        size="sm"
-                      >
-                        {value}
-                      </Badge>
-                    ),
-                    width: '12%',
-                  },
-                  { key: 'timestamp', label: 'Timestamp', width: '18%' },
-                  {
-                    key: 'status',
-                    label: 'Status',
-                    render: (value: string) => (
-                      <Badge
-                        variant={
-                          value === 'Resolved'
-                            ? 'success'
-                            : value === 'Under Review'
-                            ? 'warning'
-                            : 'info'
-                        }
-                        size="sm"
-                      >
-                        {value}
-                      </Badge>
-                    ),
-                    width: '15%',
-                  },
-                  { key: 'platform', label: 'Platform', width: '15%' },
-                  {
-                    key: 'actions',
-                    label: 'Actions',
-                    render: (value: any, row: any) => (
-                      <div className="flex gap-2">
-                        {row.status !== 'Resolved' && (
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => handleResolve(row.id)}
-                            className="p-1 text-green-success hover:bg-green-success/10 rounded transition-colors"
-                            title="Mark as Resolved"
+              {loading ? (
+                <div className="py-12 text-center text-muted-foreground">Loading incidents...</div>
+              ) : (
+                <DataTable
+                  columns={[
+                    { key: 'type', label: 'Incident Type', width: '25%' },
+                    {
+                      key: 'severity', label: 'Severity', width: '12%',
+                      render: (value: string) => (
+                        <Badge variant={value === 'Critical' ? 'critical' : value === 'High' ? 'warning' : 'success'} size="sm">{value}</Badge>
+                      ),
+                    },
+                    { key: 'timestamp', label: 'Timestamp', width: '18%' },
+                    {
+                      key: 'status', label: 'Status', width: '15%',
+                      render: (value: string) => (
+                        <Badge variant={value === 'Resolved' ? 'success' : value === 'Under Review' ? 'warning' : 'info'} size="sm">{value}</Badge>
+                      ),
+                    },
+                    { key: 'platform', label: 'Platform', width: '15%' },
+                    {
+                      key: 'actions', label: 'Actions', width: '15%',
+                      render: (_: unknown, row: Incident) => (
+                        <div className="flex gap-2">
+                          {row.status !== 'Resolved' && (
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                              onClick={() => handleResolve(row.id)}
+                              className="p-1 text-green-success hover:bg-green-success/10 rounded transition-colors" title="Mark as Resolved"
+                            >
+                              <Check size={16} />
+                            </motion.button>
+                          )}
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => handleOpenEdit(row)}
+                            className="p-1 text-primary hover:bg-primary/10 rounded transition-colors"
                           >
-                            <Check size={16} />
+                            <Edit2 size={16} />
                           </motion.button>
-                        )}
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleOpenEdit(row)}
-                          className="p-1 text-primary hover:bg-primary/10 rounded transition-colors"
-                        >
-                          <Edit2 size={16} />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setDeleteId(row.id)}
-                          className="p-1 text-red-critical hover:bg-red-critical/10 rounded transition-colors"
-                        >
-                          <Trash2 size={16} />
-                        </motion.button>
-                      </div>
-                    ),
-                    width: '15%',
-                  },
-                ]}
-                data={incidents}
-                maxRows={10}
-              />
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+                            onClick={() => setDeleteId(row.id)}
+                            className="p-1 text-red-critical hover:bg-red-critical/10 rounded transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </motion.button>
+                        </div>
+                      ),
+                    },
+                  ]}
+                  data={incidents}
+                  maxRows={10}
+                />
+              )}
             </Card>
           </motion.div>
 
@@ -291,9 +208,7 @@ export default function SecurityStatusPage() {
                 <div className="border-t border-border pt-4 mt-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Total Threats</span>
-                    <span className="text-lg font-bold text-primary">
-                      {threatMetrics.totalThreats}
-                    </span>
+                    <span className="text-lg font-bold text-primary">{threatMetrics.totalThreats}</span>
                   </div>
                 </div>
               </div>
@@ -307,37 +222,9 @@ export default function SecurityStatusPage() {
             <DataTable
               columns={[
                 { key: 'vector', label: 'Attack Vector', width: '40%' },
-                {
-                  key: 'count',
-                  label: 'Detected',
-                  render: (value) => <span className="font-semibold text-primary">{value}</span>,
-                  width: '15%',
-                },
-                {
-                  key: 'trend',
-                  label: 'Trend',
-                  render: (value) => (
-                    <span
-                      className={value.includes('+') ? 'text-red-critical' : 'text-green-success'}
-                    >
-                      {value}
-                    </span>
-                  ),
-                  width: '15%',
-                },
-                {
-                  key: 'severity',
-                  label: 'Severity',
-                  render: (value: string) => (
-                    <Badge
-                      variant={value === 'Critical' ? 'critical' : 'warning'}
-                      size="sm"
-                    >
-                      {value}
-                    </Badge>
-                  ),
-                  width: '20%',
-                },
+                { key: 'count', label: 'Detected', width: '15%', render: (value) => <span className="font-semibold text-primary">{value}</span> },
+                { key: 'trend', label: 'Trend', width: '15%', render: (value) => <span className={value.includes('+') ? 'text-red-critical' : 'text-green-success'}>{value}</span> },
+                { key: 'severity', label: 'Severity', width: '20%', render: (value: string) => <Badge variant={value === 'Critical' ? 'critical' : 'warning'} size="sm">{value}</Badge> },
               ]}
               data={attackVectorData}
               maxRows={10}
@@ -350,11 +237,7 @@ export default function SecurityStatusPage() {
           <Card title="Security Systems Health" subtitle="Status of critical security components">
             <div className="space-y-3">
               {systemHealthData.map((system, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
+                <motion.div key={idx} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.05 }}
                   className="flex items-center justify-between p-4 rounded-lg border border-border/50 hover:bg-primary/5 transition-colors"
                 >
                   <div className="flex-1">
@@ -364,42 +247,26 @@ export default function SecurityStatusPage() {
                       <span>Last checked: {system.lastChecked}</span>
                     </div>
                   </div>
-                  <Badge
-                    variant={system.status === 'Operational' ? 'success' : 'warning'}
-                    size="md"
-                  >
-                    {system.status}
-                  </Badge>
+                  <Badge variant={system.status === 'Operational' ? 'success' : 'warning'} size="md">{system.status}</Badge>
                 </motion.div>
               ))}
             </div>
           </Card>
         </motion.div>
 
-        {/* Create/Edit Incident Modal */}
+        {/* Create/Edit Modal */}
         <FormModal
           isOpen={isOpen('create-incident') || isOpen('edit-incident')}
-          onClose={() => {
-            closeModal('create-incident');
-            closeModal('edit-incident');
-          }}
+          onClose={() => { closeModal('create-incident'); closeModal('edit-incident'); }}
           title={formData.id ? 'Edit Incident' : 'Log New Security Incident'}
           subtitle={formData.id ? 'Update incident details' : 'Report a new security incident'}
           size="lg"
           footer={
             <>
-              <button
-                onClick={() => {
-                  closeModal('create-incident');
-                  closeModal('edit-incident');
-                }}
+              <button onClick={() => { closeModal('create-incident'); closeModal('edit-incident'); }}
                 className="px-4 py-2 rounded-md border border-border text-foreground hover:bg-border transition-colors"
-              >
-                Cancel
-              </button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              >Cancel</button>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                 onClick={formData.id ? handleUpdate : handleCreate}
                 className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-md font-medium transition-colors"
               >
@@ -409,73 +276,27 @@ export default function SecurityStatusPage() {
           }
         >
           <div className="space-y-4">
-            <FormInput
-              label="Incident Type"
-              name="type"
-              placeholder="e.g., Malware Detection, Suspicious Activity"
-              value={formData.type || ''}
-              onChange={(value) => setFormData({ ...formData, type: value })}
-              error={errors.type}
-              required
-            />
+            <FormInput label="Incident Type" name="type" placeholder="e.g., Malware Detection"
+              value={formData.type || ''} onChange={(v) => setFormData({ ...formData, type: v })} error={errors.type} required />
             <div className="grid grid-cols-2 gap-4">
-              <FormSelect
-                label="Severity"
-                name="severity"
-                options={[
-                  { value: 'Critical', label: 'Critical' },
-                  { value: 'High', label: 'High' },
-                  { value: 'Medium', label: 'Medium' },
-                  { value: 'Low', label: 'Low' },
-                ]}
-                value={formData.severity || ''}
-                onChange={(value) => setFormData({ ...formData, severity: value as any })}
-                required
-              />
-              <FormInput
-                label="Timestamp"
-                name="timestamp"
-                value={formData.timestamp || ''}
-                onChange={(value) => setFormData({ ...formData, timestamp: value })}
-                error={errors.timestamp}
-                required
-              />
+              <FormSelect label="Severity" name="severity"
+                options={[{ value: 'Critical', label: 'Critical' }, { value: 'High', label: 'High' }, { value: 'Medium', label: 'Medium' }, { value: 'Low', label: 'Low' }]}
+                value={formData.severity || ''} onChange={(v) => setFormData({ ...formData, severity: v as Incident['severity'] })} required />
+              <FormSelect label="Status" name="status"
+                options={[{ value: 'Under Review', label: 'Under Review' }, { value: 'Investigating', label: 'Investigating' }, { value: 'Monitoring', label: 'Monitoring' }, { value: 'Resolved', label: 'Resolved' }]}
+                value={formData.status || ''} onChange={(v) => setFormData({ ...formData, status: v as Incident['status'] })} required />
             </div>
-            <FormInput
-              label="Platform"
-              name="platform"
-              placeholder="e.g., Windows, Linux, Network"
-              value={formData.platform || ''}
-              onChange={(value) => setFormData({ ...formData, platform: value })}
-              error={errors.platform}
-              required
-            />
-            <FormSelect
-              label="Status"
-              name="status"
-              options={[
-                { value: 'Under Review', label: 'Under Review' },
-                { value: 'Investigating', label: 'Investigating' },
-                { value: 'Monitoring', label: 'Monitoring' },
-                { value: 'Resolved', label: 'Resolved' },
-              ]}
-              value={formData.status || ''}
-              onChange={(value) => setFormData({ ...formData, status: value as any })}
-              required
-            />
+            <FormInput label="Platform" name="platform" placeholder="e.g., Windows, Linux, Network"
+              value={formData.platform || ''} onChange={(v) => setFormData({ ...formData, platform: v })} error={errors.platform} required />
           </div>
         </FormModal>
 
-        {/* Delete Confirmation Dialog */}
         <ConfirmDialog
           isOpen={deleteId !== null}
           title="Delete Incident"
           message="Are you sure you want to delete this incident record? This action cannot be undone."
-          confirmText="Delete"
-          cancelText="Cancel"
-          isDangerous={true}
-          onConfirm={handleDelete}
-          onCancel={() => setDeleteId(null)}
+          confirmText="Delete" cancelText="Cancel" isDangerous={true}
+          onConfirm={handleDelete} onCancel={() => setDeleteId(null)}
         />
       </motion.div>
     </DashboardLayout>

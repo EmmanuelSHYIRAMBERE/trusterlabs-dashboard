@@ -1,86 +1,118 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { StatCard } from '@/components/shared/StatCard';
-import { Card } from '@/components/shared/Card';
-import { DataTable } from '@/components/shared/DataTable';
-import { Badge } from '@/components/shared/Badge';
-import { ThreatMetricsChart } from '@/components/shared/ThreatMetricsChart';
-import { LineChartComponent } from '@/components/shared/LineChartComponent';
-import { PieChartComponent } from '@/components/shared/PieChartComponent';
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { StatCard } from "@/components/shared/StatCard";
+import { Card } from "@/components/shared/Card";
+import { DataTable } from "@/components/shared/DataTable";
+import { Badge } from "@/components/shared/Badge";
+import { ThreatMetricsChart } from "@/components/shared/ThreatMetricsChart";
+import { LineChartComponent } from "@/components/shared/LineChartComponent";
+import { PieChartComponent } from "@/components/shared/PieChartComponent";
 import {
   dashboardStats,
   securityScoreData,
   threatMetrics,
-  incidentData,
-  trainingData,
-} from '@/lib/mockData';
-import { motion } from 'framer-motion';
-import { AlertTriangle, Shield, TrendingUp, Users, BookOpen, Briefcase, FileText, AlertTriangle as AlertIcon } from 'lucide-react';
+} from "@/lib/mockData";
+import { useCRUD } from "@/hooks/useCRUD";
+import { motion } from "framer-motion";
+import {
+  BookOpen,
+  Briefcase,
+  FileText,
+  AlertTriangle as AlertIcon,
+} from "lucide-react";
+
+interface Incident {
+  id: string;
+  type: string;
+  severity: string;
+  timestamp: string;
+  status: string;
+  platform: string;
+}
+interface TrainingProgram {
+  id: string;
+  name: string;
+  enrolled: number;
+  completed: number;
+  deadline: string;
+  status: string;
+}
 
 export default function DashboardPage() {
+  const { items: incidents, loading: incidentsLoading } = useCRUD<Incident>(
+    "/api/incidents",
+    { params: { limit: "5" } },
+  );
+  const { items: programs, loading: trainingLoading } =
+    useCRUD<TrainingProgram>("/api/training");
+
+  const totalEnrolled = programs.reduce((s, p) => s + p.enrolled, 0);
+  const totalCompleted = programs.reduce((s, p) => s + p.completed, 0);
+  const completionRate =
+    totalEnrolled > 0 ? Math.round((totalCompleted / totalEnrolled) * 100) : 0;
+  const inProgress = totalEnrolled - totalCompleted;
+
   // Sample data for charts
   const threatTrendData = [
-    { date: 'Mar 1', threats: 156 },
-    { date: 'Mar 3', threats: 189 },
-    { date: 'Mar 5', threats: 210 },
-    { date: 'Mar 7', threats: 195 },
-    { date: 'Mar 9', threats: 245 },
-    { date: 'Mar 11', threats: 267 },
-    { date: 'Mar 13', threats: 298 },
+    { date: "Mar 1", threats: 156 },
+    { date: "Mar 3", threats: 189 },
+    { date: "Mar 5", threats: 210 },
+    { date: "Mar 7", threats: 195 },
+    { date: "Mar 9", threats: 245 },
+    { date: "Mar 11", threats: 267 },
+    { date: "Mar 13", threats: 298 },
   ];
 
   const threatCategoryData = [
-    { name: 'Malware', value: 350 },
-    { name: 'Phishing', value: 280 },
-    { name: 'Brute Force', value: 210 },
-    { name: 'SQL Injection', value: 160 },
+    { name: "Malware", value: 350 },
+    { name: "Phishing", value: 280 },
+    { name: "Brute Force", value: 210 },
+    { name: "SQL Injection", value: 160 },
   ];
 
   const incidentColumns = [
-    { key: 'type', label: 'Incident Type', width: '30%' },
+    { key: "type", label: "Incident Type", width: "30%" },
     {
-      key: 'severity',
-      label: 'Severity',
+      key: "severity",
+      label: "Severity",
       render: (value: string) => (
         <Badge
           variant={
-            value === 'Critical'
-              ? 'critical'
-              : value === 'High'
-              ? 'warning'
-              : 'success'
+            value === "Critical"
+              ? "critical"
+              : value === "High"
+                ? "warning"
+                : "success"
           }
           size="sm"
         >
           {value}
         </Badge>
       ),
-      width: '15%',
+      width: "15%",
     },
-    { key: 'timestamp', label: 'Timestamp', width: '20%' },
+    { key: "timestamp", label: "Timestamp", width: "20%" },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       render: (value: string) => (
         <Badge
           variant={
-            value === 'Resolved'
-              ? 'success'
-              : value === 'Under Review'
-              ? 'warning'
-              : 'info'
+            value === "Resolved"
+              ? "success"
+              : value === "Under Review"
+                ? "warning"
+                : "info"
           }
           size="sm"
         >
           {value}
         </Badge>
       ),
-      width: '15%',
+      width: "15%",
     },
-    { key: 'platform', label: 'Platform', width: '20%' },
+    { key: "platform", label: "Platform", width: "20%" },
   ];
 
   const containerVariants = {
@@ -106,36 +138,42 @@ export default function DashboardPage() {
       >
         {/* Quick Actions */}
         <motion.div variants={itemVariants}>
-          <h2 className="text-2xl font-bold text-foreground mb-4">Quick Actions</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            Quick Actions
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
                 icon: <AlertIcon size={24} />,
-                label: 'Log Incident',
-                description: 'Report a security issue',
-                href: '/security-status',
-                color: 'bg-red-critical/10 hover:bg-red-critical/20 text-red-critical',
+                label: "Log Incident",
+                description: "Report a security issue",
+                href: "/security-status",
+                color:
+                  "bg-red-critical/10 hover:bg-red-critical/20 text-red-critical",
               },
               {
                 icon: <BookOpen size={24} />,
-                label: 'Create Course',
-                description: 'Add training program',
-                href: '/training',
-                color: 'bg-teal-primary/10 hover:bg-teal-primary/20 text-teal-primary',
+                label: "Create Course",
+                description: "Add training program",
+                href: "/training",
+                color:
+                  "bg-teal-primary/10 hover:bg-teal-primary/20 text-teal-primary",
               },
               {
                 icon: <Briefcase size={24} />,
-                label: 'Review Application',
-                description: 'Check internship apps',
-                href: '/internships',
-                color: 'bg-purple-secondary/10 hover:bg-purple-secondary/20 text-purple-secondary',
+                label: "Review Application",
+                description: "Check internship apps",
+                href: "/internships",
+                color:
+                  "bg-purple-secondary/10 hover:bg-purple-secondary/20 text-purple-secondary",
               },
               {
                 icon: <FileText size={24} />,
-                label: 'New Blog Post',
-                description: 'Write a blog article',
-                href: '/blog',
-                color: 'bg-orange-accent/10 hover:bg-orange-accent/20 text-orange-accent',
+                label: "New Blog Post",
+                description: "Write a blog article",
+                href: "/blog",
+                color:
+                  "bg-orange-accent/10 hover:bg-orange-accent/20 text-orange-accent",
               },
             ].map((action, idx) => (
               <motion.a
@@ -148,27 +186,32 @@ export default function DashboardPage() {
               >
                 <div className="mb-3">{action.icon}</div>
                 <h3 className="font-semibold mb-1">{action.label}</h3>
-                <p className="text-sm text-muted-foreground">{action.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {action.description}
+                </p>
               </motion.a>
             ))}
           </div>
         </motion.div>
 
         {/* Security Score Section */}
-        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="grid grid-cols-1 md:grid-cols-4 gap-4"
+        >
           {dashboardStats.map((stat, idx) => (
             <motion.div key={idx} variants={itemVariants}>
               <StatCard
                 label={stat.label}
                 value={stat.value}
                 change={stat.change}
-                isPositive={stat.change?.includes('+') ?? false}
+                isPositive={stat.change?.includes("+") ?? false}
                 variant={
-                  stat.label.includes('Threats')
-                    ? 'critical'
-                    : stat.label.includes('Incidents')
-                    ? 'warning'
-                    : 'success'
+                  stat.label.includes("Threats")
+                    ? "critical"
+                    : stat.label.includes("Incidents")
+                      ? "warning"
+                      : "success"
                 }
               />
             </motion.div>
@@ -178,7 +221,10 @@ export default function DashboardPage() {
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Threats and Incidents */}
-          <motion.div variants={itemVariants} className="lg:col-span-2 space-y-8">
+          <motion.div
+            variants={itemVariants}
+            className="lg:col-span-2 space-y-8"
+          >
             {/* Threat Trend */}
             <Card title="Threat Detection Trend" subtitle="Last 7 days">
               <div className="h-80">
@@ -192,8 +238,21 @@ export default function DashboardPage() {
             </Card>
 
             {/* Recent Incidents */}
-            <Card title="Recent Security Incidents" subtitle="Active threats and issues">
-              <DataTable columns={incidentColumns} data={incidentData} maxRows={5} />
+            <Card
+              title="Recent Security Incidents"
+              subtitle="Active threats and issues"
+            >
+              {incidentsLoading ? (
+                <div className="py-8 text-center text-muted-foreground">
+                  Loading...
+                </div>
+              ) : (
+                <DataTable
+                  columns={incidentColumns}
+                  data={incidents}
+                  maxRows={5}
+                />
+              )}
             </Card>
           </motion.div>
 
@@ -244,7 +303,9 @@ export default function DashboardPage() {
                         <div className="text-4xl font-bold text-primary">
                           {securityScoreData.score}
                         </div>
-                        <div className="text-xs text-muted-foreground">out of 100</div>
+                        <div className="text-xs text-muted-foreground">
+                          out of 100
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -273,44 +334,54 @@ export default function DashboardPage() {
 
             {/* Training Progress */}
             <Card title="Training Progress" subtitle="Employee compliance">
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Completion Rate</span>
-                    <span className="text-sm font-bold text-primary">
-                      {trainingData.completionRate}%
-                    </span>
+              {trainingLoading ? (
+                <div className="py-8 text-center text-muted-foreground">
+                  Loading...
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <span className="text-sm font-medium">
+                        Completion Rate
+                      </span>
+                      <span className="text-sm font-bold text-primary">
+                        {completionRate}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-card rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${completionRate}%` }}
+                        transition={{ duration: 1, delay: 0.3 }}
+                        className="h-full bg-gradient-to-r from-teal-primary to-orange-accent rounded-full"
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-card rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${trainingData.completionRate}%` }}
-                      transition={{ duration: 1, delay: 0.3 }}
-                      className="h-full bg-gradient-to-r from-teal-primary to-orange-accent rounded-full"
-                    />
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-success">
+                        {totalCompleted}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Completed</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-orange-accent">
+                        {inProgress}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        In Progress
+                      </p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-critical">
+                        {programs.length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Programs</p>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-success">
-                      {trainingData.completed}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Completed</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-accent">
-                      {trainingData.inProgress}
-                    </p>
-                    <p className="text-xs text-muted-foreground">In Progress</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-red-critical">
-                      {trainingData.pending}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Pending</p>
-                  </div>
-                </div>
-              </div>
+              )}
             </Card>
           </motion.div>
         </div>

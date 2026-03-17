@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/shared/Card';
 import { Toast } from '@/components/shared/Toast';
@@ -91,17 +92,29 @@ export default function SettingsPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveProfile = () => {
+  const { data: session } = useSession();
+
+  const handleSaveProfile = async () => {
     if (!validateProfileForm()) return;
-    setSettings({
-      ...settings,
-      name: formData.name!,
-      email: formData.email!,
-      role: formData.role!,
-      department: formData.department!,
-    });
-    closeModal('edit-profile');
-    showToast('Profile updated successfully', 'success');
+    try {
+      if (session?.user?.id) {
+        const res = await fetch(`/api/users/${session.user.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: formData.name,
+            email: formData.email,
+            department: formData.department,
+          }),
+        });
+        if (!res.ok) throw new Error('Failed to update profile');
+      }
+      setSettings({ ...settings, name: formData.name!, email: formData.email!, role: formData.role!, department: formData.department! });
+      closeModal('edit-profile');
+      showToast('Profile updated successfully', 'success');
+    } catch {
+      showToast('Failed to update profile', 'error');
+    }
   };
 
   const handleNotificationChange = (key: keyof typeof settings.notifications) => {
