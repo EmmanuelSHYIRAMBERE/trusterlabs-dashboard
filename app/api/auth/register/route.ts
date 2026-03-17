@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         email,
         role: role || "user",
         password: hashedPassword,
-      } as Parameters<typeof prisma.user.create>[0]["data"],
+      },
       select: { id: true, name: true, email: true, role: true },
     });
 
