@@ -92,7 +92,7 @@ export default function SettingsPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const { data: session } = useSession();
+  const session = useSession()?.data;
 
   const handleSaveProfile = async () => {
     if (!validateProfileForm()) return;

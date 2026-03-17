@@ -4,6 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { ToastProvider } from "@/components/toast-provider";
+import HydrationFix from "@/components/HydrationFix";
+import ClientRootLayout from "./ClientRootLayout";
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
@@ -39,16 +41,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="font-sans antialiased bg-background text-foreground">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ToastProvider>{children}</ToastProvider>
-          <Analytics />
-        </ThemeProvider>
+      <body suppressHydrationWarning>
+        <ClientRootLayout>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ToastProvider>
+              <HydrationFix>{children}</HydrationFix>
+            </ToastProvider>{" "}
+            <Analytics />
+          </ThemeProvider>
+        </ClientRootLayout>
       </body>
     </html>
   );
