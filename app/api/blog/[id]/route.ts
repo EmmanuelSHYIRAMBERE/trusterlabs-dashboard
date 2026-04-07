@@ -52,6 +52,7 @@ export async function PUT(
       ...(body.content && { content: body.content }),
       ...(body.category && { category: body.category }),
       ...(body.imageUrl !== undefined && { imageUrl: body.imageUrl }),
+      ...(body.backdropImages !== undefined && { backdropImages: body.backdropImages }),
       ...(body.tags && { tags: body.tags }),
       ...(body.featured !== undefined && { featured: body.featured }),
       ...(body.readTime && { readTime: body.readTime }),

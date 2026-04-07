@@ -9,14 +9,16 @@ interface FormModalProps {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   footer?: React.ReactNode;
 }
 
-const sizeMap = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
+const sizeMap: Record<string, string> = {
+  sm: '28rem',
+  md: '32rem',
+  lg: '42rem',
+  xl: '56rem',
+  '2xl': '80rem',
 };
 
 export function FormModal({
@@ -37,7 +39,8 @@ export function FormModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            style={{ backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', backgroundColor: 'rgba(0,0,0,0.25)' }}
+            className="fixed inset-0 z-40"
           />
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
             <motion.div
@@ -45,7 +48,8 @@ export function FormModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2 }}
-              className={`bg-card rounded-lg shadow-xl w-full ${sizeMap[size]} max-h-[90vh] overflow-y-auto`}
+              style={{ width: '95vw', maxWidth: sizeMap[size], maxHeight: '90vh' }}
+              className="bg-card rounded-lg shadow-xl overflow-y-auto"
             >
               {/* Header */}
               <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">

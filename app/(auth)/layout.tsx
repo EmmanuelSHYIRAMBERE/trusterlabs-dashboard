@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   title: "TrusterLabs | Sign In",
   description:
     "Sign in to the TrusterLabs cybersecurity dashboard to monitor threats, manage incidents, and protect your organization.",
-  keywords: ["TrusterLabs", "cybersecurity", "dashboard", "sign in", "threat monitoring"],
+  keywords: [
+    "TrusterLabs",
+    "cybersecurity",
+    "dashboard",
+    "sign in",
+    "threat monitoring",
+  ],
   authors: [{ name: "TrusterLabs" }],
   openGraph: {
     title: "TrusterLabs | Sign In",
@@ -26,18 +32,14 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <div className="min-h-screen bg-[#080810] overflow-hidden">
-          <ClientRootLayout>
-            <ClientOnly>
-              <ToastProvider>
-                <HydrationFix>{children}</HydrationFix>
-              </ToastProvider>
-            </ClientOnly>
-          </ClientRootLayout>
-        </div>
-      </body>
-    </html>
+    <div className="min-h-screen bg-[#080810] overflow-hidden">
+      <ClientRootLayout>
+        <ClientOnly>
+          <ToastProvider>
+            <HydrationFix>{children}</HydrationFix>
+          </ToastProvider>
+        </ClientOnly>
+      </ClientRootLayout>
+    </div>
   );
 }
