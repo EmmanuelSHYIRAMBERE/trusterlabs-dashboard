@@ -5,8 +5,6 @@ import bcrypt from "bcrypt";
 import { AuthOptions, Session } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
-
-
 const prisma = new PrismaClient();
 
 // Extend the Session type to include the 'id' and 'role' properties
@@ -76,7 +74,7 @@ const authOptions: AuthOptions = {
 
         const isValidPassword = await bcrypt.compare(
           credentials.password,
-          user.password
+          user.password,
         );
 
         if (!isValidPassword) {
@@ -128,8 +126,8 @@ const authOptions: AuthOptions = {
     },
   },
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: "",
+    error: "",
   },
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,

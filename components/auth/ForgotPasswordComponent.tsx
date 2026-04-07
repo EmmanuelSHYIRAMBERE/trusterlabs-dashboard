@@ -63,7 +63,7 @@ const ForgotPasswordComponent = () => {
 
         <div className="text-center text-sm text-gray-600 mt-4">
           Remembered your password?{" "}
-          <Link href="/login" className="text-purple-600 hover:underline">
+          <Link href="" className="text-purple-600 hover:underline">
             Sign in
           </Link>
         </div>
