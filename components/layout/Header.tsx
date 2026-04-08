@@ -3,11 +3,21 @@
 import { Bell, User, LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function Header() {
+  const { data: session, status } = useSession();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
+
+  if (status !== "loading" && status !== "authenticated") {
+    router.push("/");
+  }
 
   const themeOptions: {
     value: string;
@@ -34,7 +44,7 @@ export function Header() {
     <header className="sticky top-0 z-40 w-full bg-card/80 backdrop-blur-lg border-b border-border">
       <div className="flex items-center justify-between h-16 px-4 lg:px-8">
         {/* Left section - Title */}
-        <div className="flex-1">
+        <div className="hidden md:flex flex-1 ">
           <h2 className="text-xl font-semibold text-foreground">
             Fortify . Empower . Defend
           </h2>
@@ -97,13 +107,24 @@ export function Header() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-2 p-2 text-foreground hover:bg-primary/10 rounded-lg transition-colors"
+              className="flex items-center gap-2 p-2 text-foreground hover:bg-primary/10 rounded-lg transition-colors border border-border"
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-teal-primary to-purple-secondary rounded-full flex items-center justify-center">
-                <User size={16} className="text-white" />
-              </div>
+              {session?.user?.image ? (
+                <Image
+                  src={session.user.image}
+                  alt={session.user.name || "User Avatar"}
+                  width={40}
+                  height={40}
+                  className="w-8 h-8 rounded-full object-cover border border-border"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-2xl font-semibold">
+                  {session?.user?.name?.charAt(0)}
+                </div>
+              )}
+
               <span className="text-sm font-medium hidden sm:inline">
-                Admin
+                {session?.user?.name?.split(" ")[0] || "User"}
               </span>
             </motion.button>
 
@@ -117,20 +138,25 @@ export function Header() {
               >
                 <div className="p-3 border-b border-border">
                   <p className="text-sm font-medium text-foreground">
-                    Admin User
+                    {session?.user?.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    admin@trusterlabs.com
+                    {session?.user?.email}
                   </p>
                 </div>
-                <button className="w-full px-4 py-2 text-sm text-foreground hover:bg-primary/10 flex items-center gap-2 transition-colors">
-                  <User size={16} />
-                  Profile
-                </button>
-                <button className="w-full px-4 py-2 text-sm text-foreground hover:bg-destructive/10 flex items-center gap-2 transition-colors border-t border-border">
-                  <LogOut size={16} />
-                  Logout
-                </button>
+                <Link href="/dashboard/settings" className="p-2 font-semibold">
+                  <button className="w-full px-4 py-2 text-sm text-foreground hover:bg-primary/10 flex items-center gap-2 transition-colors">
+                    <User size={16} />
+                    Profile
+                  </button>
+                </Link>
+
+                <Link href="/api/auth/signout" className="p-2 font-semibold">
+                  <button className="w-full px-4 py-2 text-sm text-foreground hover:bg-destructive/10 flex items-center gap-2 transition-colors border-t border-border">
+                    <LogOut size={16} />
+                    Logout{" "}
+                  </button>
+                </Link>
               </motion.div>
             )}
           </div>

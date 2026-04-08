@@ -5,8 +5,6 @@ import bcrypt from "bcrypt";
 import { AuthOptions, Session } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
-
-
 const prisma = new PrismaClient();
 
 // Extend the Session type to include the 'id' and 'role' properties
@@ -76,7 +74,7 @@ const authOptions: AuthOptions = {
 
         const isValidPassword = await bcrypt.compare(
           credentials.password,
-          user.password
+          user.password,
         );
 
         if (!isValidPassword) {
@@ -92,13 +90,19 @@ const authOptions: AuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.email = user.email ?? undefined;
         token.name = user.name ?? undefined;
         token.image = user.image ?? undefined;
         token.role = user.role;
+      }
+      // Handle session update() calls
+      if (trigger === 'update' && session?.user) {
+        if (session.user.image) token.image = session.user.image;
+        if (session.user.name) token.name = session.user.name;
+        if (session.user.email) token.email = session.user.email;
       }
       return token;
     },
@@ -128,8 +132,8 @@ const authOptions: AuthOptions = {
     },
   },
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: "",
+    error: "",
   },
   debug: process.env.NODE_ENV === "development",
   secret: process.env.NEXTAUTH_SECRET,

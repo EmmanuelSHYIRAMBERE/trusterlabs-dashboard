@@ -73,6 +73,7 @@ model BlogPost {
   content       String
   category      String    @default("Cybersecurity Capacity Building")
   imageUrl      String?
+  backdropImages String[]
   tags          String[]
   featured      Boolean   @default(false)
   readTime      Int       @default(5)

@@ -184,7 +184,7 @@ const RegisterComponent = () => {
         router.push(redirectUrl);
       } else {
         // Default redirect to dashboard
-        router.push("/dashboard");
+        router.push("/dashboard/overview");
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -209,7 +209,7 @@ const RegisterComponent = () => {
 
       // Check if there's a redirect parameter
       const redirectUrl = searchParams.get("redirect");
-      const googleCallbackUrl = redirectUrl || "/dashboard";
+      const googleCallbackUrl = redirectUrl || "/dashboard/overview";
 
       const result = await signIn("google", {
         callbackUrl: googleCallbackUrl,

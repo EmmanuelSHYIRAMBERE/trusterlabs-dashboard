@@ -18,13 +18,17 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: Shield, label: "Security Status", href: "/security-status" },
-  { icon: BarChart3, label: "Analytics", href: "/analytics" },
-  { icon: BookOpen, label: "Training Programs", href: "/training" },
-  { icon: Briefcase, label: "Internships", href: "/internships" },
-  { icon: FileText, label: "Blog Management", href: "/blog" },
-  { icon: Settings, label: "Settings", href: "/settings" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview" },
+  {
+    icon: Shield,
+    label: "Security Status",
+    href: "/dashboard/security-status",
+  },
+  { icon: BarChart3, label: "Analytics", href: "/dashboard/analytics" },
+  { icon: BookOpen, label: "Training Programs", href: "/dashboard/training" },
+  { icon: Briefcase, label: "Internships", href: "/dashboard/internships" },
+  { icon: FileText, label: "Blog Management", href: "/dashboard/blog" },
+  { icon: Settings, label: "Settings", href: "/dashboard/settings" },
 ];
 
 export function Sidebar() {
