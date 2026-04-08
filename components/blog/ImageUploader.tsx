@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import {
   CldUploadWidget,
   CloudinaryUploadWidgetResults,
@@ -29,16 +30,26 @@ type ImageUploaderProps = (SingleUploaderProps | MultiUploaderProps) & {
 
 export function ImageUploader(props: ImageUploaderProps) {
   const { multiple = false, disabled } = props;
+  // Keep a mutable ref so successive onSuccess callbacks always see the latest list
+  const accumulatedRef = useRef<string[]>([]);
 
   const handleSuccess = (result: CloudinaryUploadWidgetResults) => {
     if (result.event !== "success") return;
     const url = (result.info as CloudinaryResult).secure_url;
     if (multiple) {
-      const current = (props as MultiUploaderProps).value ?? [];
-      (props as MultiUploaderProps).onChange([...current, url]);
+      accumulatedRef.current = [...accumulatedRef.current, url];
+      (props as MultiUploaderProps).onChange([...accumulatedRef.current]);
     } else {
       (props as SingleUploaderProps).onChange(url);
     }
+  };
+
+  // Seed ref with current values when widget opens so new uploads append correctly
+  const handleOpen = (open: () => void) => {
+    if (multiple) {
+      accumulatedRef.current = [...((props as MultiUploaderProps).value ?? [])];
+    }
+    open();
   };
 
   const removeMultiple = (index: number) => {
@@ -101,15 +112,34 @@ export function ImageUploader(props: ImageUploaderProps) {
 
       <CldUploadWidget
         uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_PRESET_KEY!}
-        options={{ sources: ["local"], multiple, maxFiles: multiple ? 5 : 1 }}
+        options={{
+          sources: [
+            "local",
+            "camera",
+            "dropbox",
+            "facebook",
+            "gettyimages",
+            "google_drive",
+            "instagram",
+            "istock",
+            "shutterstock",
+            "unsplash",
+            "url",
+          ],
+          multiple,
+          maxFiles: multiple ? 15 : 1,
+          cropping: true,
+          croppingAspectRatio: 1,
+          croppingShowDimensions: true,
+        }}
         onSuccess={handleSuccess}
       >
         {({ open }) => (
           <button
             type="button"
-            onClick={() => open()}
+            onClick={() => handleOpen(open)}
             disabled={disabled}
-            className="flex items-center justify-center gap-2 w-full p-4 rounded-lg border border-dashed border-border hover:border-primary text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 w-full h-32 p-4 rounded-lg border border-dashed border-border hover:border-primary text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
           >
             <UploadCloud className="h-5 w-5" />
             <span className="text-sm font-medium">

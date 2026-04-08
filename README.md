@@ -7,6 +7,7 @@ A modern, fully-featured cybersecurity monitoring and management dashboard built
 ## 🎯 Features
 
 ### Dashboard Pages
+
 - **Dashboard Overview** - Security metrics, threat trends, incident monitoring
 - **Security Status** - Real-time threat tracking and incident management
 - **Analytics** - Detailed metrics and compliance tracking
@@ -16,6 +17,7 @@ A modern, fully-featured cybersecurity monitoring and management dashboard built
 - **Settings** - User preferences and system configuration
 
 ### Design & UX
+
 - 🌙 **Dark Mode Cybersecurity Theme** - Teal, orange, purple, green accents
 - ✨ **Smooth Animations** - Framer Motion page transitions and interactions
 - 📱 **Fully Responsive** - Mobile-first design for all devices
@@ -23,6 +25,7 @@ A modern, fully-featured cybersecurity monitoring and management dashboard built
 - 🎨 **Custom Design System** - Cohesive color tokens and typography
 
 ### Components
+
 - **StatCard** - Metric display with trends
 - **DataTable** - Flexible data grid with custom rendering
 - **Charts** - Line, pie, and bar charts with Recharts
@@ -35,6 +38,7 @@ A modern, fully-featured cybersecurity monitoring and management dashboard built
 - **Section** - Page section with heading
 
 ### Technology Stack
+
 - **Next.js 16** - React framework with Turbopack
 - **React 19** - Latest React features
 - **TypeScript** - Type-safe development
@@ -46,9 +50,11 @@ A modern, fully-featured cybersecurity monitoring and management dashboard built
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ and pnpm (or npm/yarn)
 
 ### Installation
+
 ```bash
 # Clone or download the project
 cd truster-labs-dashboard
@@ -120,6 +126,7 @@ TrusterLabs/
 ## 🎨 Design System
 
 ### Color Palette
+
 - **Teal Primary**: Main interactive elements
 - **Orange Accent**: Highlights and CTAs
 - **Purple Secondary**: Alternative interactions
@@ -129,13 +136,16 @@ TrusterLabs/
 - **Card Surface**: `oklch(0.13 0 0)`
 
 ### Typography
+
 - **Display**: 2xl/3xl bold
 - **Heading**: xl/2xl bold
 - **Body**: sm/base regular
 - **Small**: xs regular
 
 ### Spacing
+
 Uses Tailwind's standard spacing scale (4px increments):
+
 - `p-4` = 16px padding
 - `gap-6` = 24px gap
 - `mb-8` = 32px margin bottom
@@ -143,51 +153,41 @@ Uses Tailwind's standard spacing scale (4px increments):
 ## 📖 Usage
 
 ### Basic Page Setup
-```tsx
-'use client';
 
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { StatCard, Card } from '@/components/shared';
+```tsx
+"use client";
+
+import { StatCard, Card } from "@/components/shared";
 
 export default function MyPage() {
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <StatCard 
-          label="Key Metric" 
-          value={42}
-          change="+5%"
-        />
-        <Card title="Section">
-          Content here
-        </Card>
-      </div>
-    </DashboardLayout>
+    <div className="space-y-6">
+      <StatCard label="Key Metric" value={42} change="+5%" />
+      <Card title="Section">Content here</Card>
+    </div>
   );
 }
 ```
 
 ### Using Animations
-```tsx
-import { motion } from 'framer-motion';
-import { containerVariants, itemVariants } from '@/lib/animations';
 
-<motion.div 
-  variants={containerVariants} 
-  initial="hidden" 
-  animate="visible"
->
+```tsx
+import { motion } from "framer-motion";
+import { containerVariants, itemVariants } from "@/lib/animations";
+
+<motion.div variants={containerVariants} initial="hidden" animate="visible">
   <motion.div variants={itemVariants}>Item 1</motion.div>
   <motion.div variants={itemVariants}>Item 2</motion.div>
-</motion.div>
+</motion.div>;
 ```
 
 ### Creating a Data Table
+
 ```tsx
 <DataTable
   columns={[
-    { key: 'name', label: 'Name', width: '30%' },
-    { key: 'status', label: 'Status', width: '20%' },
+    { key: "name", label: "Name", width: "30%" },
+    { key: "status", label: "Status", width: "20%" },
   ]}
   data={dataArray}
   rowsPerPage={10}
@@ -197,26 +197,25 @@ import { containerVariants, itemVariants } from '@/lib/animations';
 ## 🔌 Integration with Real Data
 
 ### Replace Mock Data
+
 1. Create API routes in `app/api/`
 2. Update component imports from `mockData` to API calls
 3. Use SWR or React Query for data fetching
 
 Example:
+
 ```tsx
-import useSWR from 'swr';
+import useSWR from "swr";
 
 export default function Dashboard() {
-  const { data: stats } = useSWR('/api/dashboard/stats');
-  
-  return (
-    <DashboardLayout>
-      {/* Use stats data */}
-    </DashboardLayout>
-  );
+  const { data: stats } = useSWR("/api/dashboard/stats");
+
+  return <>{/* Use stats data */}</>;
 }
 ```
 
 ### Add Authentication
+
 1. Implement auth middleware
 2. Protect routes with authentication check
 3. Store user session in HTTP-only cookie
@@ -231,6 +230,7 @@ export default function Dashboard() {
 ## 🔄 Animation Variants
 
 Located in `/lib/animations.ts`:
+
 - `pageTransition` - Page entry/exit
 - `containerVariants` - Staggered children
 - `itemVariants` - Individual item animation
@@ -241,6 +241,7 @@ Located in `/lib/animations.ts`:
 ## 🎯 Component API
 
 ### StatCard
+
 ```tsx
 <StatCard
   label="Label"
@@ -253,6 +254,7 @@ Located in `/lib/animations.ts`:
 ```
 
 ### Modal
+
 ```tsx
 <Modal
   isOpen={boolean}
@@ -265,6 +267,7 @@ Located in `/lib/animations.ts`:
 ```
 
 ### ProgressBar
+
 ```tsx
 <ProgressBar
   value={number}
@@ -279,20 +282,15 @@ Located in `/lib/animations.ts`:
 ## 📊 Charts
 
 ### LineChartComponent
+
 ```tsx
-<LineChartComponent
-  data={array}
-  dataKey="keyName"
-  height={300}
-/>
+<LineChartComponent data={array} dataKey="keyName" height={300} />
 ```
 
 ### PieChartComponent
+
 ```tsx
-<PieChartComponent
-  data={array}
-  height={300}
-/>
+<PieChartComponent data={array} height={300} />
 ```
 
 ## 🧪 Browser Support
@@ -305,17 +303,20 @@ Located in `/lib/animations.ts`:
 ## 🚀 Deployment
 
 ### Deploy to Vercel
+
 ```bash
 git push origin main
 ```
 
 The project is optimized for Vercel:
+
 - Automatic build optimization
 - Edge functions ready
 - Environment variables support
 - Analytics integration
 
 ### Build for Production
+
 ```bash
 pnpm build
 pnpm start
@@ -330,14 +331,18 @@ pnpm start
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Create `.env.local`:
+
 ```env
 # Add any API endpoints
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
 ### Customize Theme
+
 Edit `/app/globals.css` to modify colors:
+
 ```css
 --teal-primary: oklch(0.535 0.168 200);
 --orange-accent: oklch(0.645 0.195 61);
@@ -346,16 +351,18 @@ Edit `/app/globals.css` to modify colors:
 ## 🐛 Troubleshooting
 
 ### Routes returning 404
+
 - Check page files exist in correct directory structure
-- Verify `DashboardLayout` wraps page content
 - Clear `.next` folder: `rm -rf .next`
 
 ### Animations not working
+
 - Check Framer Motion is installed
 - Verify `'use client'` directive at top of component
 - Ensure imports: `import { motion } from 'framer-motion'`
 
 ### Styling issues
+
 - Verify `<html className="dark">` in layout
 - Check design tokens in globals.css
 - Clear Tailwind cache: `rm -rf .next`
@@ -371,6 +378,7 @@ Feel free to customize and extend this dashboard for your needs!
 ## 📧 Support
 
 For questions or issues:
+
 1. Check the documentation files
 2. Review example implementations in existing pages
 3. Refer to Next.js and Framer Motion documentation

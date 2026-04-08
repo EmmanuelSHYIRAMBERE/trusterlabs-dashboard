@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { ConfirmDialog } from "@/components/forms";
 import { useModal } from "@/hooks/useModal";
 import { useCRUD } from "@/hooks/useCRUD";
@@ -128,7 +127,7 @@ export default function BlogManagementPage() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { staggerChildren: 0.1 } }}
@@ -187,6 +186,6 @@ export default function BlogManagementPage() {
         confirmText="Delete"
         isDangerous
       />
-    </DashboardLayout>
+    </>
   );
 }

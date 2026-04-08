@@ -55,23 +55,7 @@ const LoginComponent = () => {
       }
 
       // Default role-based redirect
-      const role = updatedSession.user.role;
-      let redirectPath = "/dashboard";
-
-      switch (role) {
-        case "ADMIN":
-          redirectPath = "/admin/dashboard";
-          break;
-        case "VENDOR":
-          redirectPath = "/vendor/dashboard";
-          break;
-        case "CUSTOMER":
-        case "USER":
-          redirectPath = "/dashboard";
-          break;
-        default:
-          redirectPath = "/dashboard";
-      }
+      let redirectPath = "/dashboard/overview";
 
       // Force a hard refresh to ensure all session data is loaded
       window.location.href = redirectPath;

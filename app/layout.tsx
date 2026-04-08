@@ -45,13 +45,13 @@ export default function RootLayout({
         <ClientRootLayout>
           <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >
             <ToastProvider>
               <HydrationFix>{children}</HydrationFix>
-            </ToastProvider>{" "}
+            </ToastProvider>
             <Analytics />
           </ThemeProvider>
         </ClientRootLayout>

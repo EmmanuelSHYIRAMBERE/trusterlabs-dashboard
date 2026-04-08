@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import 'md-editor-rt/lib/style.css';
-import { ImageUploader } from './ImageUploader';
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+import "md-editor-rt/lib/style.css";
+import { ImageUploader } from "./ImageUploader";
 
-const MdEditor = dynamic(() => import('md-editor-rt').then((m) => m.MdEditor), { ssr: false });
+const MdEditor = dynamic(() => import("md-editor-rt").then((m) => m.MdEditor), {
+  ssr: false,
+});
 
 export interface BlogPostFormData {
   id?: string;
@@ -18,7 +20,7 @@ export interface BlogPostFormData {
   tags: string;
   featured: boolean;
   readTime: number;
-  status: 'Draft' | 'Scheduled' | 'Published';
+  status: "Draft" | "Scheduled" | "Published";
   publishedDate: string;
 }
 
@@ -30,45 +32,60 @@ interface BlogPostFormProps {
 }
 
 const CATEGORIES = [
-  'Cybersecurity Capacity Building',
-  'Threat Intelligence',
-  'Incident Response',
-  'Security Awareness',
-  'Policy & Governance',
+  "Cybersecurity Capacity Building",
+  "Solution Development",
+  "Stakeholder Meetings and Events",
+  "Threat Intelligence",
+  "Incident Response",
+  "Security Awareness",
+  "Policy & Governance",
+  "Others",
 ];
 
-const STATUS_OPTIONS = ['Draft', 'Scheduled', 'Published'];
+const STATUS_OPTIONS = ["Draft", "Scheduled", "Published"];
 
 const defaultForm: BlogPostFormData = {
-  title: '',
-  excerpt: '',
-  content: '',
+  title: "",
+  excerpt: "",
+  content: "",
   category: CATEGORIES[0],
-  imageUrl: '',
+  imageUrl: "",
   backdropImages: [],
-  tags: '',
+  tags: "",
   featured: false,
   readTime: 5,
-  status: 'Draft',
-  publishedDate: '',
+  status: "Draft",
+  publishedDate: "",
 };
 
-export function BlogPostForm({ initial, onSubmit, onCancel, loading }: BlogPostFormProps) {
-  const [form, setForm] = useState<BlogPostFormData>({ ...defaultForm, ...initial });
-  const [errors, setErrors] = useState<Partial<Record<keyof BlogPostFormData, string>>>({});
+export function BlogPostForm({
+  initial,
+  onSubmit,
+  onCancel,
+  loading,
+}: BlogPostFormProps) {
+  const [form, setForm] = useState<BlogPostFormData>({
+    ...defaultForm,
+    ...initial,
+  });
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof BlogPostFormData, string>>
+  >({});
 
   useEffect(() => {
     setForm({ ...defaultForm, ...initial });
     setErrors({});
   }, [initial]);
 
-  const set = <K extends keyof BlogPostFormData>(key: K, value: BlogPostFormData[K]) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const set = <K extends keyof BlogPostFormData>(
+    key: K,
+    value: BlogPostFormData[K],
+  ) => setForm((prev) => ({ ...prev, [key]: value }));
 
   const validate = () => {
     const e: typeof errors = {};
-    if (!form.title.trim()) e.title = 'Title is required';
-    if (!form.content.trim()) e.content = 'Content is required';
+    if (!form.title.trim()) e.title = "Title is required";
+    if (!form.content.trim()) e.content = "Content is required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -83,60 +100,107 @@ export function BlogPostForm({ initial, onSubmit, onCancel, loading }: BlogPostF
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Title *</label>
+        <label className="block text-sm font-medium text-foreground mb-1">
+          Title *
+        </label>
         <input
           value={form.title}
-          onChange={(e) => set('title', e.target.value)}
+          onChange={(e) => set("title", e.target.value)}
           placeholder="Post title"
           className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
         />
-        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+        {errors.title && (
+          <p className="text-xs text-red-500 mt-1">{errors.title}</p>
+        )}
       </div>
 
       {/* Excerpt */}
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Excerpt</label>
+        <label className="block text-sm font-medium text-foreground mb-1">
+          Excerpt
+        </label>
         <textarea
           value={form.excerpt}
-          onChange={(e) => set('excerpt', e.target.value)}
+          onChange={(e) => set("excerpt", e.target.value)}
           placeholder="Short description"
           rows={2}
           className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none"
         />
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2  gap-3">
+        {/* Cover Image */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Cover Image
+          </label>
+          <ImageUploader
+            value={form.imageUrl}
+            onChange={(url) => set("imageUrl", url as string)}
+            disabled={loading}
+          />
+        </div>
+
+        {/* Backdrop Images */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Backdrop Images
+          </label>
+          <ImageUploader
+            multiple
+            value={form.backdropImages}
+            onChange={(urls) => set("backdropImages", urls as string[])}
+            disabled={loading}
+          />
+        </div>
+      </div>
+
       {/* Content — Markdown Editor */}
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Content *</label>
+        <label className="block text-sm font-medium text-foreground mb-1">
+          Content *
+        </label>
         <MdEditor
           modelValue={form.content}
-          onChange={(v) => set('content', v)}
-          style={{ height: '360px' }}
+          onChange={(v) => set("content", v)}
+          style={{ height: "360px" }}
           language="en-US"
         />
-        {errors.content && <p className="text-xs text-red-500 mt-1">{errors.content}</p>}
+        {errors.content && (
+          <p className="text-xs text-red-500 mt-1">{errors.content}</p>
+        )}
       </div>
 
       {/* Category & Status */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Category</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Category
+          </label>
           <select
             value={form.category}
-            onChange={(e) => set('category', e.target.value)}
+            onChange={(e) => set("category", e.target.value)}
             className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+            {CATEGORIES.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Status</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Status
+          </label>
           <select
             value={form.status}
-            onChange={(e) => set('status', e.target.value as BlogPostFormData['status'])}
+            onChange={(e) =>
+              set("status", e.target.value as BlogPostFormData["status"])
+            }
             className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           >
-            {STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -144,21 +208,25 @@ export function BlogPostForm({ initial, onSubmit, onCancel, loading }: BlogPostF
       {/* Tags & Read Time */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Tags (comma-separated)</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Tags (comma-separated)
+          </label>
           <input
             value={form.tags}
-            onChange={(e) => set('tags', e.target.value)}
+            onChange={(e) => set("tags", e.target.value)}
             placeholder="security, threat, news"
             className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Read Time (min)</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Read Time (min)
+          </label>
           <input
             type="number"
             min={1}
             value={form.readTime}
-            onChange={(e) => set('readTime', Number(e.target.value))}
+            onChange={(e) => set("readTime", Number(e.target.value))}
             className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -167,11 +235,13 @@ export function BlogPostForm({ initial, onSubmit, onCancel, loading }: BlogPostF
       {/* Published Date & Featured */}
       <div className="grid grid-cols-2 gap-4 items-end">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Published Date</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Published Date
+          </label>
           <input
             type="date"
             value={form.publishedDate}
-            onChange={(e) => set('publishedDate', e.target.value)}
+            onChange={(e) => set("publishedDate", e.target.value)}
             className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -180,32 +250,16 @@ export function BlogPostForm({ initial, onSubmit, onCancel, loading }: BlogPostF
             id="featured"
             type="checkbox"
             checked={form.featured}
-            onChange={(e) => set('featured', e.target.checked)}
+            onChange={(e) => set("featured", e.target.checked)}
             className="h-4 w-4 accent-primary"
           />
-          <label htmlFor="featured" className="text-sm font-medium text-foreground">Featured post</label>
+          <label
+            htmlFor="featured"
+            className="text-sm font-medium text-foreground"
+          >
+            Featured post
+          </label>
         </div>
-      </div>
-
-      {/* Cover Image */}
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Cover Image</label>
-        <ImageUploader
-          value={form.imageUrl}
-          onChange={(url) => set('imageUrl', url as string)}
-          disabled={loading}
-        />
-      </div>
-
-      {/* Backdrop Images */}
-      <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Backdrop Images</label>
-        <ImageUploader
-          multiple
-          value={form.backdropImages}
-          onChange={(urls) => set('backdropImages', urls as string[])}
-          disabled={loading}
-        />
       </div>
 
       {/* Actions */}
@@ -222,7 +276,7 @@ export function BlogPostForm({ initial, onSubmit, onCancel, loading }: BlogPostF
           disabled={loading}
           className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
-          {loading ? 'Saving…' : initial?.id ? 'Update Post' : 'Create Post'}
+          {loading ? "Saving…" : initial?.id ? "Update Post" : "Create Post"}
         </button>
       </div>
     </form>

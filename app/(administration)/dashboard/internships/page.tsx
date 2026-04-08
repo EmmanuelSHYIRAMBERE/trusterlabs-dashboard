@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card } from '@/components/shared/Card';
 import { DataTable } from '@/components/shared/DataTable';
 import { Badge } from '@/components/shared/Badge';
@@ -90,7 +89,6 @@ export default function InternshipsPage() {
   };
 
   return (
-    <DashboardLayout>
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
         {error && (
           <div className="p-4 rounded-lg bg-red-critical/10 border border-red-critical/30 text-red-critical text-sm">{error}</div>
@@ -293,6 +291,5 @@ export default function InternshipsPage() {
           onConfirm={handleDelete} onCancel={() => setDeleteId(null)}
         />
       </motion.div>
-    </DashboardLayout>
   );
 }
