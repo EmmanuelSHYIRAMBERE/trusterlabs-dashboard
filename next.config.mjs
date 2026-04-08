@@ -5,8 +5,20 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: ['res.cloudinary.com'],
+    domains: ["res.cloudinary.com"],
   },
-}
+  async headers() {
+    return [
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type" },
+        ],
+      },
+    ];
+  },
+};
 
-export default nextConfig
+export default nextConfig;
